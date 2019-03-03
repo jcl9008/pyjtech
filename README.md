@@ -1,26 +1,19 @@
-## Status
-[![Build Status](https://travis-ci.org/koolsb/pyblackbird.svg?branch=master)](https://travis-ci.org/koolsb/pyblackbird)[![Coverage Status](https://coveralls.io/repos/github/koolsb/pyblackbird/badge.svg)](https://coveralls.io/github/koolsb/pyblackbird)
-# pyblackbird
-Python3 interface implementation for Monoprice Blackbird 4k 8x8 HDBaseT Matrix
+
+# pyjtech
+Python3 interface implementation for J-Tech Digital HDMI 2.0 Matrix JTECH-8X8-H20. Also sold by No Hassle AV as the 4K HDMI Matrix 8x8, HDCP2.2. Originally cloned from pyblackbird for the monoprice matrix.
 
 ## Notes
 This is for use with [Home-Assistant](http://home-assistant.io)
 
 ## Usage
 ```python
-from pyblackbird import get_blackbird
-
-# Connect via serial port
-blackbird = get_blackbird('/dev/ttyUSB0')
+from pyjtech import get_jtech
 
 # Connect via IP
-blackbird = get_blackbird('192.168.1.50', use_serial=False)
-
-# Print system lock status
-print('System Lock is {}'.format('On' if blackbird.lock_status() else 'Off'))
+jtech = get_jtech('10.0.0.7')
 
 # Valid zones are 1-8
-zone_status = blackbird.zone_status(1)
+zone_status = jtech.zone_status(1)
 
 # Print zone status
 print('Zone Number = {}'.format(zone_status.zone))
@@ -29,18 +22,12 @@ print('AV Source = {}'.format(zone_status.av))
 print('IR Source = {}'.format(zone_status.ir))
 
 # Turn off zone #1
-blackbird.set_power(1, False)
+jtech.set_power(1, False)
 
 # Set source 5 for zone #1
-blackbird.set_zone_source(1, 5)
+jtech.set_zone_source(1, 5)
 
 # Set all zones to source 2
-blackbird.set_all_zone_source(2)
-
-# Lock system buttons
-blackbird.lock_front_buttons()
-
-# Unlock system buttons
-blackbird.unlock_front_buttons()
+jtech.set_all_zone_source(2)
 
 ```
