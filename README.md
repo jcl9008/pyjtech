@@ -4,6 +4,8 @@ Python3 interface implementation for J-Tech Digital HDMI 2.0 Matrix JTECH-8X8-H2
 
 ## Notes
 This is for use with [Home-Assistant](http://home-assistant.io)
+Only supports IP communication with the matrix at this time (not serial).
+May not be compatible with the new version of the No Hassle AV Matrix 8x8 that is 18GBPS HDR10 YUV 444 since the version developed against here is the standard 10.2GBPS 8x8 HDMI 4K MATRIX SWITCHER HDCP2.2 HDTV
 
 ## Usage
 ```python
