@@ -18,7 +18,7 @@ if sys.argv[-1] == 'publish':
 license = """
 MIT License
 
-Copyright (c) 2018 koolsb
+Copyright (c) 2018 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,16 +39,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-setup(name='pyblackbird',
+setup(name='pyjtech',
       version=VERSION,
-      description='Python API for talking to Monoprice Blackbird 4k 8x8 HDBaseT Matrix',
-      url='https://github.com/koolsb/pyblackbird',
-      download_url='https://github.com/koolsb/pyblackbird/archive/{}.tar.gz'.format(VERSION),
-      author='Ben Kools',
-      author_email='koolsb@my.uwstout.edu',
+      description='Python3 interface implementation for J-Tech Digital HDMI 2.0 Matrix JTECH-8X8-H20. Also sold by No Hassle AV as the 4K HDMI Matrix 8x8, HDCP2.2',
+      url='https://github.com/netslayer/pyjtech',
+      download_url='https://github.com/netslayer/pyjtech/archive/{}.tar.gz'.format(VERSION),
+      author='Chris Germano',
+      author_email='chris.germano@gmail.com',
       license='MIT',
-      install_requires=['pyserial>=3.4','pyserial-asyncio>=0.4'],
-      packages=['pyblackbird'],
+      install_requires=[],
+      packages=['pyjtech'],
       classifiers=['Development Status :: 4 - Beta',
                    'Programming Language :: Python :: 3.5'],
       zip_safe=True)
