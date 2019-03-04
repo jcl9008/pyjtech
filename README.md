@@ -23,7 +23,7 @@ print('Zone Power is {}'.format('On' if zone_status.power else 'Off'))
 print('AV Source = {}'.format(zone_status.av))
 
 # Turn off zone #1
-jtech.set_power(1, False)
+jtech.set_zone_power(1, False)
 
 # Set source 5 for zone #1
 jtech.set_zone_source(1, 5)

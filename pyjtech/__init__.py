@@ -49,7 +49,7 @@ class ZoneStatus(object):
         #print(statusAV)
         #print(statusPower)
 
-        return ZoneStatus(zone, statusAV[zone], statusPower[zone])
+        return ZoneStatus(zone, statusPower[zone], statusAV[zone])
 
 class Jtech(object):
     """
@@ -125,24 +125,45 @@ def get_jtech(url):
             """
             Initialize the client.
             """
-            url = 'http://' + url + '/VIDDivSta.CGI';
-            values = {}
+            self.url = url
 
-            data = urllib.parse.urlencode(values)
-            data = data.encode('ascii') # data should be bytes
-            self.req = urllib.request.Request(url, data)
-
-        def _process_request(self, request: bytes, skip=0):
+        def _process_request(self, request: bytes, zone=None, power=None, av=None):
             """
             Send data to socket
             :param request: request that is sent to the jtech
             :param skip: number of bytes to skip for end of transmission decoding
             :return: ascii string returned by jtech
             """
-            _LOGGER.debug('Sending "%s"', url)
+            _LOGGER.debug('Sending "%s"', self.url)
 
-            #print('sending', url) 
+            #print(zone)
+            #print(power)
+            #print(av)
 
+            values = {}
+
+            url = 'http://' + self.url
+
+            if zone is None:
+                url += '/VIDDivSta.CGI'
+            else:
+                #http://10.0.0.7/TimSendCmd.CGI?button=O7ON
+                if power is True:
+                    values = {'button' : "O" + str(zone) + "ON"}
+                #http://10.0.0.7/TimSendCmd.CGI?button=O7OFF
+                if power is False:
+                    values = {'button' : "O" + str(zone) + "OFF"}
+                #http://10.0.0.7/TimSendCmd.CGI?button=O7I7
+                if av is not None:
+                    values = {'button' : "O" + str(zone) + "I" + str(av)}
+                url += '/TimSendCmd.CGI'
+            data = urllib.parse.urlencode(values)
+            data = data.encode('ascii') # data should be bytes
+            self.req = urllib.request.Request(url, data)
+
+            #print('sending url', url)
+            #print('sending values', values) 
+            #print(data)
             response = ''
 
             with urllib.request.urlopen(self.req, timeout = TIMEOUT) as resp:
@@ -157,22 +178,23 @@ def get_jtech(url):
         @synchronized
         def zone_status(self, zone: int):
             # Returns status of a zone
-            return ZoneStatus.from_string(zone, self._process_request(_format_zone_status_request(zone), skip=20))
+            return ZoneStatus.from_string(zone, self._process_request(_format_zone_status_request(zone), zone=None, power=None, av=None))
 
         @synchronized
         def set_zone_power(self, zone: int, power: bool):
             # Set zone power
-            self._process_request(_format_set_zone_power(zone, power))
+            self._process_request(_format_set_zone_power(zone, power), zone=zone, power=power, av=None)
 
         @synchronized
         def set_zone_source(self, zone: int, source: int):
             # Set zone source
-            self._process_request(_format_set_zone_source(zone, source))
+            self._process_request(_format_set_zone_source(zone, source), zone=zone, power=None, av=source)
 
         @synchronized
         def set_all_zone_source(self, source: int):
-            # Set all zones to one source
-            self._process_request(_format_set_all_zone_source(source))
-
+            for i in range(8):
+                # Set all zones to one source
+                self._process_request(_format_set_all_zone_source(source), zone=i+1, power=None, av=source)
+        
     return JtechSync(url)
 
