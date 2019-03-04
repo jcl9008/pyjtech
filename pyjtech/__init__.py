@@ -11,7 +11,6 @@ ZONE_PATTERN_OFF = re.compile('\D\D\DOFF\D\D\d\d\s\s\D\D\D\D\D\D\D\D\d\d\s')
 EOL = b'\r'
 LEN_EOL = len(EOL)
 TIMEOUT = 2 # Number of seconds before operation timeout
-PORT = 4001
 SOCKET_RECV = 2048
 
 class ZoneStatus(object):
@@ -73,25 +72,6 @@ class Jtech(object):
         """
         raise NotImplemented()
 
-    def lock_front_buttons():
-        """
-        Lock front panel buttons
-        """
-        raise NotImplemented()
-
-    def unlock_front_buttons():
-        """
-        Unlock front panel buttons
-        """
-        raise NotImplemented()
-
-    def lock_status():
-        """
-        Report system locking status
-        """
-        raise NotImplemented()
-
-
 # Helpers
 
 def _format_zone_status_request(zone: int) -> bytes:
@@ -111,7 +91,7 @@ def _format_set_all_zone_source(source: int) -> bytes:
 def get_jtech(url):
     """
     Return synchronous version of Jtech interface
-    :param port_url: serial port, i.e. '/dev/ttyUSB0'
+    :param url: IP of the matrix, i.e. '10.0.0.7'
     :return: synchronous implementation of Jtech interface
     """
     lock = RLock()
@@ -129,10 +109,9 @@ def get_jtech(url):
             Initialize the client.
             """
             self.host = url
-            self.port = PORT
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.settimeout(TIMEOUT)
-            self.socket.connect((self.host, self.port))
+            self.socket.connect((self.host, 80))
 
             # Clear login message
             self.socket.recv(SOCKET_RECV)
@@ -180,21 +159,5 @@ def get_jtech(url):
             # Set all zones to one source
             self._process_request(_format_set_all_zone_source(source))
 
-        @synchronized
-        def lock_front_buttons(self):
-            # Lock front panel buttons
-            self._process_request(_format_lock_front_buttons())
-
-        @synchronized
-        def unlock_front_buttons(self):
-            # Unlock front panel buttons
-            self._process_request(_format_unlock_front_buttons())
-
-        @synchronized
-        def lock_status(self):
-            # Report system locking status
-            return LockStatus.from_string(self._process_request(_format_lock_status()))
-
     return JtechSync(url)
-
 

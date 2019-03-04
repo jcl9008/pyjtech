@@ -1,8 +1,7 @@
 import unittest
 
-from pyjtech import (get_jtech, get_async_jtech, ZoneStatus)
+from pyjtech import (get_jtech, ZoneStatus)
 from tests import (create_dummy_port, create_dummy_socket)
-import asyncio
 
 
 class TestZoneStatus(unittest.TestCase):
@@ -63,25 +62,6 @@ class TestJtech(unittest.TestCase):
     def test_timeout(self):
         with self.assertRaises(serial.SerialTimeoutException):
            self.jtech.set_zone_source(6,6)
-
-class TestAsyncJtech(TestJtech):
-
-    def setUp(self):
-        self.responses = {}
-        loop = asyncio.get_event_loop()
-        jtech = loop.run_until_complete(get_async_jtech(create_dummy_port(self.responses), loop))
-
-        # Dummy jtech that converts async to sync
-        class DummyJtech():
-            def __getattribute__(self, item):
-                def f(*args, **kwargs):
-                    return loop.run_until_complete(jtech.__getattribute__(item)(*args, **kwargs))
-                return f
-        self.jtech = DummyJtech()
-
-    def test_timeout(self):
-        with self.assertRaises(asyncio.TimeoutError):
-            self.jtech.set_zone_source(6, 6)
 
 if __name__ == '__main__':
    unittest.main()
