@@ -21,7 +21,6 @@ zone_status = jtech.zone_status(1)
 print('Zone Number = {}'.format(zone_status.zone))
 print('Zone Power is {}'.format('On' if zone_status.power else 'Off'))
 print('AV Source = {}'.format(zone_status.av))
-print('IR Source = {}'.format(zone_status.ir))
 
 # Turn off zone #1
 jtech.set_power(1, False)

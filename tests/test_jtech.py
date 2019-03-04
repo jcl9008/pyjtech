@@ -17,12 +17,11 @@ class TestJtech(unittest.TestCase):
         self.jtech = get_jtech(create_dummy_port(self.responses))
 
     def test_zone_status(self):
-        self.responses[b'Status1.\r'] = b'AV: 02->01\r\nIR: 02->01\r'
+        self.responses[b'Status1.\r'] = b'AV: 02->01\r'
         status = self.jtech.zone_status(1)
         self.assertEqual(1, status.zone)
         self.assertTrue(status.power)
         self.assertEqual(2, status.av)
-        self.assertEqual(2, status.ir)
         self.assertEqual(0, len(self.responses))
 
 

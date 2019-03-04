@@ -1,40 +1,55 @@
 import functools
 import logging
-import re
-import socket
+import urllib.parse
+import urllib.request
 from functools import wraps
 from threading import RLock
 
 _LOGGER = logging.getLogger(__name__)
-ZONE_PATTERN_ON = re.compile('\D\D\D\s(\d\d)\D\D\d\d\s\s\D\D\D\s(\d\d)\D\D\d\d\s')
-ZONE_PATTERN_OFF = re.compile('\D\D\DOFF\D\D\d\d\s\s\D\D\D\D\D\D\D\D\d\d\s')
-EOL = b'\r'
-LEN_EOL = len(EOL)
+
 TIMEOUT = 2 # Number of seconds before operation timeout
-SOCKET_RECV = 2048
 
 class ZoneStatus(object):
     def __init__(self,
                  zone: int,
                  power: bool,
-                 av: int,
-                 ir: int):
+                 av: int):
         self.zone = zone
         self.power = power
         self.av = av
-        self.ir = ir
 
+    # VidSta=O1ON&O2ON&O3ON&O4ON&O5ON&O6ON&O7ON&O8ON&O1I2&O2I7&O3I4&O4I8&O5I4&O6I8&O7I7&O8I4
     @classmethod
     def from_string(cls, zone: int, string: str):
         if not string:
             return None
-        match_on = re.search (ZONE_PATTERN_ON, string)
-        if not match_on:
-            match_off = re.search (ZONE_PATTERN_OFF, string)
-            if not match_off:
-                return None
-            return ZoneStatus(zone,0,None,None)
-        return ZoneStatus(zone,1,*[int(m) for m in match_on.groups()])
+
+        if not string.startswith("VidSta="):
+            return None
+        
+        package = string[7:].split("&")
+
+        #print(package)
+
+        statusPower = [None]*9
+        statusAV = [None]*9
+
+        for key in package:
+            i = int(key[1:][:1])
+            if "I" in key:
+                val = int(key[3:])
+                statusAV[i] = val
+            if "I" not in key:
+                val = key[2:]
+                if val == "ON":
+                    statusPower[i] = True
+                if val == "OFF":
+                    statusPower[i] = False
+        
+        #print(statusAV)
+        #print(statusPower)
+
+        return ZoneStatus(zone, statusAV[zone], statusPower[zone])
 
 class Jtech(object):
     """
@@ -78,9 +93,11 @@ def _format_zone_status_request(zone: int) -> bytes:
     return 'Status{}.\r'.format(zone).encode()
 
 def _format_set_zone_power(zone: int, power: bool) -> bytes:
+    #http://10.0.0.7/TimSendCmd.CGI?button=O7OFF
     return '{}{}.\r'.format(zone, '@' if power else '$').encode()
 
 def _format_set_zone_source(zone: int, source: int) -> bytes:
+    #http://10.0.0.7/TimSendCmd.CGI?button=O1I1
     source = int(max(1, min(source,8)))
     return '{}B{}.\r'.format(source, zone).encode()
 
@@ -108,13 +125,12 @@ def get_jtech(url):
             """
             Initialize the client.
             """
-            self.host = url
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.settimeout(TIMEOUT)
-            self.socket.connect((self.host, 80))
+            url = 'http://' + url + '/VIDDivSta.CGI';
+            values = {}
 
-            # Clear login message
-            self.socket.recv(SOCKET_RECV)
+            data = urllib.parse.urlencode(values)
+            data = data.encode('ascii') # data should be bytes
+            self.req = urllib.request.Request(url, data)
 
         def _process_request(self, request: bytes, skip=0):
             """
@@ -123,19 +139,18 @@ def get_jtech(url):
             :param skip: number of bytes to skip for end of transmission decoding
             :return: ascii string returned by jtech
             """
-            _LOGGER.debug('Sending "%s"', request)
+            _LOGGER.debug('Sending "%s"', url)
 
-            self.socket.send(request)
+            #print('sending', url) 
 
             response = ''
 
-            while True:
+            with urllib.request.urlopen(self.req, timeout = TIMEOUT) as resp:
+                response = resp.read()
 
-                data = self.socket.recv(SOCKET_RECV)
-                response += data.decode('ascii')
-                
-                if EOL in data and len(response) > skip:
-                    break
+            response = response.decode("utf-8") 
+
+            #print('received', response)
 
             return response
 
