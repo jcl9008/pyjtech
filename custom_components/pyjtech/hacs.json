@@ -1,0 +1,5 @@
+{
+    "name": "J-Tech HDMI Maxtrix",
+    "domains": ["media_player"],
+    "render_readme": true
+  }

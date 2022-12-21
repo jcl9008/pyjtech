@@ -1,0 +1,10 @@
+{
+    "domain": "jtech_hdmi_matrix",
+    "name": "J-Tech 8x8 H20 Matrix Controller",
+    "documentation": "https://github.com/jcl9008/pyjtech",
+    "dependencies": [],
+    "version": "1.0.0",
+    "codeowners": [
+      "@jcl9008"
+    ]
+  }
